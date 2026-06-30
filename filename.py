@@ -1,4 +1,5 @@
 import os
+from flask import Flask, render_template, request, redirect
 from pyyoutube import Client
 from dotenv import load_dotenv
 
@@ -9,15 +10,25 @@ CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 
 client = Client(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
 
-url, state = client.get_authorize_url()
-print('Authorize: ', url)
+@app.route("/")
+def home():
+    url, state = client.get_authorize_url()
+    return render_template("home.html", auth_url=url)
 
-redirect_url = input('Redirect: ')
-access_token = client.generate_access_token(authorization_response=redirect_url)
+@app.route("/callback")
+def callback():
+    redirect_url = request.url
+    access_token = client.generate_access_token(authorization_response=redirect_url)
+    return render_template("callback.html", token=access_token)
 
-video_id = input('Enter Video ID: ')
-response = client.videos.rate(video_id, rating="like")
-print(response)
+@app.route("/rate", methods=["GET", "POST"])
+def rate_video():
+    if request.method == "POST":
+        video_id = request.form.get("video_id")
+        response = client.videos.rate(video_id, rating="like")
+        rating = client.videos.get_rating(video_id=video_id)
+        return render_template("rate.html", response=response, rating=rating)
+    return render_template("rate_page.html")
 
-rating = client.videos.get_rating(video_id=video_id)
-print(rating)
+if __name__ == "__main__":
+    app.run(debug=True, host="0.0.0.0")
