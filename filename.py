@@ -1,4 +1,5 @@
 import os
+import git
 from flask import Flask, render_template, request, redirect
 from pyyoutube import Client
 from dotenv import load_dotenv
@@ -30,6 +31,16 @@ def rate_video():
         rating = client.videos.get_rating(video_id=video_id)
         return render_template("rate.html", response=response, rating=rating)
     return render_template("rate_page.html")
+
+@app.route("/update_server", methods=['POST'])
+def webhook():
+    if request.method == 'POST':
+        repo = git.Repo('/home/CHANGE_TO_PYTHON_ANYWHERE_USERNAME/CHANGE_TO_GITHUB_REPO_NAME')
+        origin = repo.remotes.origin
+        origin.pull()
+        return 'Updated PythonAnywhere successfully', 200
+    else:
+        return 'Wrong event type', 400
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")
