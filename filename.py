@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, redirect
 from pyyoutube import Client
 from dotenv import load_dotenv
 
+app = Flask(__name__)
 load_dotenv()
 
 CLIENT_ID = os.getenv("CLIENT_ID")
